@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>SNOW · Sophie</title>
+<title>MUSCU · Sophie</title>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="SNOW">
+<meta name="apple-mobile-web-app-title" content="MUSCU">
 <meta name="theme-color" content="#FBD7DC">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
-<link rel="icon" type="image/png" href="icon-512.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=2">
+<link rel="icon" type="image/png" href="icon-512.png?v=2">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,600..900,100&family=DM+Sans:opsz,wght@9..40,400..700&display=swap" rel="stylesheet">
@@ -574,7 +574,7 @@ const TEMPLATES = {
   }
 };
 
-const APP_VERSION = '20261117220822';
+const APP_VERSION = '20261117221350';
 const USER_NAME = 'Sophie';
 const PIN_HASH = 'eab9f423';
 function pinHash(x){ let v=5381; for(const c of ('snow✦'+x)) v=((v*33)^c.codePointAt(0))>>>0; return v.toString(16); }
@@ -1496,7 +1496,7 @@ document.addEventListener('click',e=>{
 function pinGate(){
   if(LS('snow-unlock')===PIN_HASH) return true;
   const el=document.createElement('div'); el.id='pin'; let cur='';
-  const draw=()=>{ el.innerHTML=`<div class="pin-in"><div class="pin-logo">SNOW <span>✦</span></div><div class="pin-t">Code d'accès</div>
+  const draw=()=>{ el.innerHTML=`<div class="pin-in"><div class="pin-logo">MUSCU<span>✦</span></div><div class="pin-t">Code d'accès</div>
     <div class="pin-dots">${[0,1,2,3].map(i=>`<i class="${i<cur.length?'on':''}"></i>`).join('')}</div>
     <div class="pin-pad">${[1,2,3,4,5,6,7,8,9,'',0,'⌫'].map(k=>k===''?'<span></span>':`<button data-k="${k}">${k}</button>`).join('')}</div></div>`; };
   draw(); document.body.appendChild(el);
