@@ -777,19 +777,26 @@ function renderSeance(){
       <div style="height:6px;background:var(--line);border-radius:6px;margin-top:8px;overflow:hidden"><i style="display:block;height:100%;width:${pct}%;background:var(--acc)"></i></div>
       <div class="row" style="gap:8px;margin-top:10px"><span class="chip ${sDone?'acc':''}">${sDone?'✓':'○'} SNOW</span><span class="chip ${cDone?'acc':''}">${cDone?'✓':'○'} CAF</span><span class="sub">cette semaine</span></div></div>`;
   }
-  if(snow){
-    const tiles=snow.exercises.map(e=>esc(e.name.replace(/\s*\(.*?\)/,''))).join(' · ');
-    h+=`<div class="home-card ${sDone?'':'todo'}"><div class="row between"><div><div class="kicker">Séance SNOW</div><h2 style="margin-top:2px">${esc(snow.name.replace(/^(Salle|Snow|SNOW)\s*·\s*/,''))}</h2>
-</div></div>
-      <div style="height:10px"></div>
-      ${sDone?`<div class="sub" style="margin:2px 0 10px">✓ Faite ${jour(sDone.date)}${sDone.rpe?' · ressenti '+sDone.rpe+'/10':''}</div>`:planLine('snow')}
-      <button class="btn ${sDone?'':'pri'} block big" data-act="start" data-p="${p.id}" data-d="${snow.id}">${sDone?'Refaire la séance SNOW':'Démarrer la séance SNOW'}</button></div>`;
+  const td=ymd(new Date());
+  const doneToday=t=>sortedSessions().find(x=>typeOf(x)===t && ymd(x.date)===td);
+  const planToday=t=>state.plans.find(pl=>pl.type===t && pl.date===td);
+  const showSnow=snow&&(planToday('snow')||doneToday('snow')), showCaf=caf&&(planToday('caf')||doneToday('caf'));
+  if(showSnow){ const dn=doneToday('snow');
+    h+=`<div class="home-card ${dn?'':'todo'}"><div class="kicker">${dn?'Faite aujourd\'hui':'Aujourd\'hui'}</div><h2 style="margin-top:2px">${esc(snow.name.replace(/^(Salle|Snow|SNOW)\s*·\s*/,''))}</h2>
+      <div style="height:12px"></div>
+      ${dn?`<div class="sub" style="margin:0 0 12px">✓ Bravo${dn.rpe?' · ressenti '+dn.rpe+'/10':''}</div>`:''}
+      ${dn?'':`<button class="btn pri block big" data-act="start" data-p="${p.id}" data-d="${snow.id}">Démarrer la séance SNOW</button>`}</div>`;
   }
-  if(caf){
-    h+=`<div class="home-card caf ${cDone?'':'todo'}"><div class="kicker">Cours collectif</div><h2 style="margin-top:2px">CAF</h2>
-      <div style="height:10px"></div>
-      ${cDone?`<div class="sub" style="margin:10px 0 0">✓ Fait ${jour(cDone.date)}${cDone.rpe?' · ressenti '+cDone.rpe+'/10':''}</div>`:planLine('caf')}
-      <button class="btn ${cDone?'':'pri'} block big" data-act="logclass" data-p="${p.id}" data-d="${caf.id}">${cDone?'Valider un autre CAF':'J\'ai fait mon CAF'}</button></div>`;
+  if(showCaf){ const dn=doneToday('caf');
+    h+=`<div class="home-card caf ${dn?'':'todo'}"><div class="kicker">${dn?'Fait aujourd\'hui':'Aujourd\'hui'}</div><h2 style="margin-top:2px">CAF</h2>
+      <div style="height:12px"></div>
+      ${dn?`<div class="sub" style="margin:0 0 4px">✓ Bravo${dn.rpe?' · ressenti '+dn.rpe+'/10':''}</div>`:`<button class="btn pri block big" data-act="logclass" data-p="${p.id}" data-d="${caf.id}">J'ai fait mon CAF</button>`}</div>`;
+  }
+  if(!showSnow && !showCaf){
+    const nx=[...state.plans].filter(pl=>pl.date>td).sort((a,b)=>a.date.localeCompare(b.date))[0];
+    h+=`<div class="home-card rest"><div class="kicker">Aujourd'hui</div><h2 style="margin-top:2px">Pas de séance prévue</h2>
+      <div class="sub" style="margin:8px 0 14px">${nx?`Prochaine : <b>${nx.type==='snow'?esc(snow?snow.name.replace(/^(Salle|Snow|SNOW)\s*·\s*/,''):'Musculation'):'CAF'}</b> ${fromYmd(nx.date).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}`:'Aucune séance calée pour le moment.'}</div>
+      <button class="btn block big" data-act="gocal">${nx?'Voir le calendrier':'Caler mes séances'}</button></div>`;
   }
   return h;
 }
@@ -1094,7 +1101,7 @@ function renderCalendrier(){
     h+=`<div class="quote day-q ${kind}">${esc(list[hsh%list.length])}</div>`; }
   if(!ss.length && !pls.length) h+=`<div class="card sub">Rien ce jour-là.${k>=today?' Cale une séance :':''}${k>=today?`<div class="row" style="margin-top:10px"><button class="btn sm" data-act="plan" data-type="snow" data-date="${k}">+ Séance SNOW</button><button class="btn sm" data-act="plan" data-type="caf" data-date="${k}">+ CAF</button></div>`:''}</div>`;
   pls.filter(pl=>!ss.some(s=>typeOf(s)===pl.type)).forEach(pl=>{
-    h+=`<div class="card row between"><div><b>${TYPE_LAB[pl.type]}</b><div class="sub">${k<today?'Prévue, pas faite':'Prévue'}</div></div><button class="btn sm ghost danger" data-act="plan" data-type="${pl.type}" data-date="${k}">Retirer</button></div>`; });
+    h+=`<div class="card row between"><div><b>${TYPE_LAB[pl.type]}</b><div class="sub">${k<today?'Prévue, pas faite':'Prévue'}</div></div><div class="row" style="gap:6px">${k===today&&p?(()=>{const d=visibleDays(p).find(x=>pl.type==='caf'?x.kind==='class':x.kind!=='class'); return d?`<button class="btn sm pri" data-act="${pl.type==='caf'?'logclass':'start'}" data-p="${p.id}" data-d="${d.id}">${pl.type==='caf'?'Valider':'Démarrer'}</button>`:'';})():''}<button class="btn sm ghost danger" data-act="plan" data-type="${pl.type}" data-date="${k}">Retirer</button></div></div>`; });
   ss.forEach(s=>{
     h+=`<div class="card"><div class="row between"><div class="grow"><b>${s.kind==='class'?'CAF':esc(s.dayName)}</b><div class="sub">${new Date(s.date).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})} · ${s.durationMin||0} min${s.rpe?' · ressenti '+s.rpe+'/10':''}</div></div><span class="chip acc">✓ Fait</span></div>
       ${(s.exercises||[]).length?`<div class="hs-detail">${s.exercises.map(e=>`<div class="e"><span>${esc(e.name)}</span><span>${e.sets.map(x=>(x.kg?fmt(x.kg)+'×':'')+x.reps).join(' · ')}</span></div>`).join('')}</div>`:''}
