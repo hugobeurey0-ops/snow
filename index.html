@@ -780,16 +780,16 @@ function renderSeance(){
   if(snow){
     const tiles=snow.exercises.map(e=>esc(e.name.replace(/\s*\(.*?\)/,''))).join(' · ');
     h+=`<div class="home-card ${sDone?'':'todo'}"><div class="row between"><div><div class="kicker">Séance SNOW</div><h2 style="margin-top:2px">${esc(snow.name.replace(/^(Salle|Snow|SNOW)\s*·\s*/,''))}</h2>
-      <div class="sub">${snow.phase?esc(snow.phase)+' · ':''}≈ 50 min · 10 min de vélo + 40 min de muscu · ${snow.exercises.length} exercices</div></div></div>
-      <div class="exlist" style="margin:10px 0 14px">${tiles}</div>
+</div></div>
+      <div style="height:10px"></div>
       ${sDone?`<div class="sub" style="margin:2px 0 10px">✓ Faite ${jour(sDone.date)}${sDone.rpe?' · ressenti '+sDone.rpe+'/10':''}</div>`:planLine('snow')}
       <button class="btn ${sDone?'':'pri'} block big" data-act="start" data-p="${p.id}" data-d="${snow.id}">${sDone?'Refaire la séance SNOW':'Démarrer la séance SNOW'}</button></div>`;
   }
   if(caf){
     h+=`<div class="home-card caf ${cDone?'':'todo'}"><div class="kicker">Cours collectif</div><h2 style="margin-top:2px">CAF</h2>
-      <div class="sub">Cuisses · abdos · fessiers — valide-le après le cours</div>
+      <div style="height:10px"></div>
       ${cDone?`<div class="sub" style="margin:10px 0 0">✓ Fait ${jour(cDone.date)}${cDone.rpe?' · ressenti '+cDone.rpe+'/10':''}</div>`:planLine('caf')}
-      <button class="btn ${cDone?'':'pri'} block big" style="margin-top:12px" data-act="logclass" data-p="${p.id}" data-d="${caf.id}">${cDone?'Valider un autre CAF':'J\'ai fait mon CAF'}</button></div>`;
+      <button class="btn ${cDone?'':'pri'} block big" data-act="logclass" data-p="${p.id}" data-d="${caf.id}">${cDone?'Valider un autre CAF':'J\'ai fait mon CAF'}</button></div>`;
   }
   return h;
 }
