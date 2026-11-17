@@ -243,6 +243,8 @@ body.resting nav.tabs{display:none}
 .sv-steps li{margin:3px 0}
 /* calendrier */
 .pw-row{margin-top:14px}
+.sync-dot{display:inline-block;width:9px;height:9px;border-radius:99px;margin-right:7px;vertical-align:0}
+.sync-dot.ok{background:#2F7D4F}.sync-dot.wait{background:var(--mut)}.sync-dot.err{background:var(--red)}
 .quote.day-q{margin:-2px 0 14px;font-size:15.5px}
 .quote.day-q.done{background:var(--red);color:var(--cream);box-shadow:3px 3px 0 var(--brown)}
 .quote.day-q.done:before{color:var(--cream)}
@@ -581,7 +583,7 @@ const state = {
   ready:false, mode:null, offline:false,
   programs:[], sessions:[], bodyweight:[], draft:null,
   view:'seance', editing:null, openSession:null, armed:null,
-  progEx:null, modal:null, rest:null, histFilter:null, figOpen:{}, maxes:{}, plans:[], calMonth:null, calSel:null, planWeek:0
+  progEx:null, modal:null, rest:null, histFilter:null, figOpen:{}, maxes:{}, plans:[], deleted:{}, maxesTs:0, calMonth:null, calSel:null, planWeek:0
 };
 const LS = (k,v)=>{try{ if(v===undefined) return JSON.parse(localStorage.getItem(k)); localStorage.setItem(k,JSON.stringify(v)); }catch(e){ return null; }};
 
@@ -605,17 +607,66 @@ function sortedSessions(){return [...state.sessions].sort((a,b)=>b.date.localeCo
 
 // ---------- stockage ----------
 let db=null;
+const SYNC_COLS=['sessions','bodyweight','plans'];
 const store = {
   async put(col,id,data){
     if(state.mode==='db'){ await db.doc(col+'/'+id).set(data); }
-    else { localSave(); }
+    else { if(SYNC_COLS.includes(col)){ const o=state[col].find(x=>x.id===id); if(o) o._ts=Date.now(); delete state.deleted[id]; } localSave(); }
   },
   async del(col,id){
     if(state.mode==='db'){ await db.doc(col+'/'+id).delete(); }
-    else { localSave(); }
+    else { if(SYNC_COLS.includes(col)) state.deleted[id]=Date.now(); localSave(); }
   }
 };
-function localSave(){ LS('muscu-v1',{programs:state.programs,sessions:state.sessions,bodyweight:state.bodyweight,draft:state.draft,maxes:state.maxes,plans:state.plans}); }
+function localSave(noSync){ LS('muscu-v1',{programs:state.programs,sessions:state.sessions,bodyweight:state.bodyweight,draft:state.draft,maxes:state.maxes,maxesTs:state.maxesTs||0,plans:state.plans,deleted:state.deleted}); if(!noSync) scheduleSync(); }
+
+// ---------- sauvegarde en ligne (Supabase) ----------
+const SB_URL='https://vipwyzpixbbklxeupdbz.supabase.co';
+const SB_KEY='sb_publishable__HAkwntcsHajmAtXmtp9RA_KNKjbRBX';
+const sync={status:'idle',last:null,error:null};
+function syncCode(){ let c=LS('snow-code'); if(!c){ const a=new Uint8Array(12); crypto.getRandomValues(a); const al='abcdefghjkmnpqrstuvwxyz23456789'; c='snow-'+[...a].map(x=>al[x%al.length]).join('').match(/.{4}/g).join('-'); LS('snow-code',c); } return c; }
+async function rpc(fn,body){
+  const r=await fetch(SB_URL+'/rest/v1/rpc/'+fn,{method:'POST',headers:{'apikey':SB_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok) throw new Error('HTTP '+r.status+' '+(await r.text()).slice(0,200));
+  const t=await r.text(); return t?JSON.parse(t):null;
+}
+function mergeData(a,b){ // a = local, b = distant
+  const del={...(b.deleted||{})}; Object.entries(a.deleted||{}).forEach(([k,v])=>{ if(!del[k]||del[k]<v) del[k]=v; });
+  const out={deleted:del};
+  SYNC_COLS.forEach(c=>{ const m={}; [...(b[c]||[]),...(a[c]||[])].forEach(o=>{ if(!o||!o.id) return; const cur=m[o.id]; if(!cur||(o._ts||0)>=(cur._ts||0)) m[o.id]=o; });
+    out[c]=Object.values(m).filter(o=>!(del[o.id] && del[o.id]>=(o._ts||0))); });
+  if((a.maxesTs||0)>=(b.maxesTs||0)){ out.maxes=a.maxes||{}; out.maxesTs=a.maxesTs||0; } else { out.maxes=b.maxes||{}; out.maxesTs=b.maxesTs||0; }
+  return out;
+}
+let syncTimer=null, syncing=false, syncAgain=false;
+function scheduleSync(){ if(state.mode!=='local') return; clearTimeout(syncTimer); syncTimer=setTimeout(doSync,1500); }
+async function doSync(){
+  if(state.mode!=='local') return;
+  if(syncing){ syncAgain=true; return; }
+  syncing=true; sync.status='sync';
+  try{
+    const code=syncCode();
+    const remote=(await rpc('get_state',{p_code:code}))||{};
+    const local={sessions:state.sessions,bodyweight:state.bodyweight,plans:state.plans,maxes:state.maxes,maxesTs:state.maxesTs||0,deleted:state.deleted};
+    const m=mergeData(local,remote);
+    await rpc('set_state',{p_code:code,p_data:{...m,v:1,savedAt:new Date().toISOString()}});
+    const changed=JSON.stringify([state.sessions,state.plans,state.bodyweight,state.maxes])!==JSON.stringify([m.sessions,m.plans,m.bodyweight,m.maxes]);
+    state.sessions=m.sessions; state.bodyweight=m.bodyweight; state.plans=m.plans; state.maxes=m.maxes; state.maxesTs=m.maxesTs; state.deleted=m.deleted;
+    LS('muscu-v1',{programs:state.programs,sessions:state.sessions,bodyweight:state.bodyweight,draft:state.draft,maxes:state.maxes,maxesTs:state.maxesTs,plans:state.plans,deleted:state.deleted});
+    sync.status='ok'; sync.last=new Date(); sync.error=null; LS('snow-last-sync',sync.last.toISOString());
+    if(changed) softRender(); else updateSyncBadge();
+  }catch(e){ console.error(e); sync.status='err'; sync.error=String(e.message||e); updateSyncBadge(); }
+  syncing=false; if(syncAgain){ syncAgain=false; doSync(); }
+}
+function updateSyncBadge(){ const el=document.getElementById('syncstate'); if(el) el.innerHTML=syncLine(); }
+function syncLine(){
+  const last=sync.last||(LS('snow-last-sync')?new Date(LS('snow-last-sync')):null);
+  if(sync.status==='sync') return '<span class="sync-dot wait"></span>Synchronisation…';
+  if(sync.status==='err') return '<span class="sync-dot err"></span>Pas de réseau ou serveur injoignable · tes données restent sur le téléphone et partiront dès que possible';
+  return last?`<span class="sync-dot ok"></span>Sauvegardé en ligne · ${last.toLocaleDateString('fr-FR',{day:'numeric',month:'short'})} à ${last.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}`:'<span class="sync-dot wait"></span>Pas encore sauvegardé';
+}
+window.addEventListener('online',()=>doSync());
+document.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='visible') doSync(); });
 function upsert(arr,obj){const i=arr.findIndex(x=>x.id===obj.id); if(i>=0) arr[i]=obj; else arr.push(obj);}
 async function safe(p,okMsg){
   try{ await p; if(okMsg) toast(okMsg); }
@@ -630,7 +681,7 @@ async function deleteSession(id){state.sessions=state.sessions.filter(s=>s.id!==
 async function saveBW(e){upsert(state.bodyweight,e); render(); const {id,...d}=e; await safe(store.put('bodyweight',id,d));}
 async function deleteBW(id){state.bodyweight=state.bodyweight.filter(b=>b.id!==id); render(); await safe(store.del('bodyweight',id));}
 
-async function saveMax(name,kg){ const k=norm(name); if(kg) state.maxes[k]=kg; else delete state.maxes[k];
+async function saveMax(name,kg){ const k=norm(name); if(kg) state.maxes[k]=kg; else delete state.maxes[k]; state.maxesTs=Date.now();
   if(state.mode==='db') await safe(db.doc('meta/maxes').set({m:state.maxes}),'Max enregistré'); else { localSave(); toast('Max enregistré'); } }
 function bestE1(name){ let b=0; const n=norm(name); state.sessions.forEach(s=>(s.exercises||[]).forEach(e=>{ if(norm(e.name)===n) e.sets.forEach(x=>{ if(x.reps<=10) b=Math.max(b,e1rm(x.kg,x.reps)); }); })); return b; }
 function refMax(name){ const m=state.maxes[norm(name)]; if(m) return {kg:m,src:'manuel'}; const b=bestE1(name); return b?{kg:Math.round(b*2)/2,src:'estimé'}:null; }
@@ -639,7 +690,7 @@ function pctKg(e){ const m=refMax(e.name); if(!m||!e.pct) return null; return {m
 let draftTimer=null, draftWriting=false, draftAgain=false;
 function touchDraft(){ if(!state.draft) return; state.draft.updatedAt=Date.now(); clearTimeout(draftTimer); draftTimer=setTimeout(flushDraft,900); }
 async function flushDraft(){
-  if(state.mode!=='db'){ localSave(); return; }
+  if(state.mode!=='db'){ localSave(true); return; }
   if(draftWriting){ draftAgain=true; return; }
   draftWriting=true;
   try{
@@ -661,12 +712,12 @@ async function init(){
   else {
     state.mode='local';
     const d=LS('muscu-v1')||{};
-    state.programs=d.programs||[]; state.sessions=d.sessions||[]; state.bodyweight=d.bodyweight||[]; state.draft=d.draft||null; state.maxes=d.maxes||{}; state.plans=d.plans||[];
+    state.programs=d.programs||[]; state.sessions=d.sessions||[]; state.bodyweight=d.bodyweight||[]; state.draft=d.draft||null; state.maxes=d.maxes||{}; state.maxesTs=d.maxesTs||0; state.plans=d.plans||[]; state.deleted=d.deleted||{};
     { const i=state.programs.findIndex(x=>x.id===SEED_PROGRAM.id);
       if(i<0){ state.programs.unshift(SEED_PROGRAM); localSave(); }
       else if((state.programs[i].updatedAt||'')<SEED_PROGRAM.updatedAt){ state.programs[i]=SEED_PROGRAM; localSave(); } }
     try{ navigator.storage&&navigator.storage.persist&&navigator.storage.persist(); }catch(e){}
-    state.ready=true; render();
+    state.ready=true; render(); doSync();
   }
 }
 function subscribe(){
@@ -1189,6 +1240,14 @@ function renderProgression(){
       <table class="tbl"><tbody>${pctNames.map((n,i)=>{const m=refMax(n); const man=state.maxes[norm(n)];
         return `<tr><td>${esc(n)}<div class="sub mut">${m?(m.src==='manuel'?'saisi':'estimé : '+fmt(m.kg)+' kg'):'pas encore de donnée'}</div></td><td class="r" style="width:170px"><div class="row" style="justify-content:flex-end"><input class="f" id="pmax-${i}" inputmode="decimal" placeholder="${m?fmt(m.kg):'kg'}" value="${man?esc(man):''}" style="width:80px;min-height:38px;padding:6px;text-align:center"><button class="btn sm" data-act="pmax" data-i="${i}" data-n="${esc(n)}">OK</button></div></td></tr>`;}).join('')}</tbody></table></div>`;
   }
+  if(state.mode==='local'){
+    h+=`<div class="card"><h3>Sauvegarde en ligne</h3><div class="sub" id="syncstate" style="margin:6px 0 12px">${syncLine()}</div>
+      <label class="l">Ton code personnel</label>
+      <div class="row"><input class="f grow" readonly value="${esc(syncCode())}" style="font-family:ui-monospace,Menlo,monospace;font-size:14px"><button class="btn sm" data-act="copycode">Copier</button></div>
+      <div class="sub" style="margin-top:8px">Garde ce code (envoie-le-toi par message) : il permet de retrouver toutes tes séances sur un nouveau téléphone.</div>
+      ${state.codeEdit?`<div style="margin-top:12px"><label class="l">Code d'un autre téléphone</label><div class="row"><input class="f grow" id="newcode" placeholder="snow-xxxx-xxxx-xxxx" style="font-family:ui-monospace,Menlo,monospace"><button class="btn sm pri" data-act="setcode">Valider</button></div></div>`:`<div style="margin-top:10px"><a href="#" data-act="editcode" style="font-size:13px;color:var(--tx2)">Récupérer mes données avec un code</a></div>`}
+      <div style="margin-top:10px"><button class="btn sm" data-act="syncnow">Synchroniser maintenant</button></div></div>`;
+  }
   return h;
 }
 
@@ -1364,6 +1423,10 @@ document.addEventListener('click',e=>{
     case 'svtcx': { const s=state.sessions.find(x=>x.id===state.modal.id); const name=(s.kind==='class'?'CAF':'SNOW')+'_'+ymd(s.date)+'.tcx';
       if(!dlNs){ const u=URL.createObjectURL(new Blob([tcxFor(s)],{type:'application/vnd.garmin.tcx+xml'})); const a=document.createElement('a'); a.href=u; a.download=name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(u),4000); break; }
       dlNs.save({filename:name,data:new Blob([tcxFor(s)],{type:'application/vnd.garmin.tcx+xml'})}).then(()=>toast('Fichier prêt ✓')).catch(()=>toast('Téléchargement annulé.')); break; }
+    case 'copycode': copyTxt(syncCode(),'Code copié'); break;
+    case 'editcode': e.preventDefault(); state.codeEdit=true; render(); break;
+    case 'setcode': { const v=($('#newcode').value||'').trim().toLowerCase(); if(!/^snow-[a-z0-9]{4}(-[a-z0-9]{4}){2}$/.test(v)){ toast('Code invalide.'); break; } LS('snow-code',v); state.codeEdit=false; toast('Code enregistré, récupération…'); doSync(); render(); break; }
+    case 'syncnow': doSync(); render(); break;
     case 'warmup': startRest(600,'Échauffement · vélo'); break;
     case 'restmin': state.restMini=!state.restMini; renderRest(); break;
     case 'restskip': state.rest=null; renderRest(); break;
