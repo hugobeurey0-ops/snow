@@ -243,6 +243,15 @@ body.resting nav.tabs{display:none}
 .sv-steps li{margin:3px 0}
 /* calendrier */
 .pw-row{margin-top:14px}
+.co-day.cur{box-shadow:0 0 0 2.5px var(--red),0 8px 22px rgba(160,40,60,.08)}
+.co-g3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-top:8px}
+.co-g4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:6px}
+.co-g3 .f,.co-g4 .f{min-height:40px;padding:8px;text-align:center}
+.co-g3 div:first-child .f,.co-g4 div[style] .f{text-align:left}
+.co-ex{border-top:1.5px dashed var(--line);margin-top:12px;padding-top:12px}
+select.f.co-ss{width:112px;flex:none;min-height:42px;padding:6px 8px}
+.co-ex .l{font-size:10.5px;margin-bottom:2px}
+.co-save{position:sticky;bottom:calc(74px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 1.4fr;gap:8px;background:var(--bg);padding:10px 0;z-index:5}
 #pin{position:fixed;inset:0;z-index:100;background:repeating-linear-gradient(90deg,var(--red) 0 34px,#B71129 34px 68px);display:flex;align-items:center;justify-content:center;padding:env(safe-area-inset-top) 20px env(safe-area-inset-bottom);transition:opacity .25s}
 #pin.ok{opacity:0}
 .pin-in{text-align:center;color:var(--cream);width:min(320px,100%)}
@@ -574,11 +583,12 @@ const TEMPLATES = {
   }
 };
 
-const APP_VERSION = '20261117221438';
+const APP_VERSION = '20261117222247';
 const USER_NAME = 'Sophie';
+const COACH_HASH = 'eabf452c';
 const PIN_HASH = 'eabb7f46';
 function pinHash(x){ let v=5381; for(const c of ('snow✦'+x)) v=((v*33)^c.codePointAt(0))>>>0; return v.toString(16); }
-const SEED_PROGRAM = {"name": "Prépa snowboard — jusqu'au 19 février", "startDate": "2026-11-16T00:00:00.000Z", "createdAt": "2026-11-17T19:30:00.000Z", "updatedAt": "2026-11-17T22:00:00.000Z", "days": [{"id": "snow-p1", "name": "Musculation", "weeks": [1, 5], "note": "10 min de vélo progressif · Genou : douleur max 3/10, sinon réduis charge ou amplitude", "exercises": [{"name": "Équilibre sur une jambe", "note": "Reps = secondes par jambe · genou légèrement fléchi et dans l'axe, les yeux fermés si c'est facile", "sets": 3, "repMin": 30, "repMax": 30, "rest": 30}, {"name": "Squat", "note": "Descente en 3 s · amplitude sans douleur au genou", "sets": 3, "repMin": 6, "repMax": 8, "rest": 120, "pct": [65, 72]}, {"name": "Fentes bulgares", "note": "Reps par jambe · réduis l'amplitude si le genou tire", "sets": 3, "repMin": 8, "repMax": 10, "rest": 0, "pct": [62, 70], "ss": "A"}, {"name": "Pallof press", "note": "Reps par côté · bassin immobile", "sets": 3, "repMin": 10, "repMax": 12, "rest": 75, "ss": "A"}, {"name": "Soulevé de terre roumain", "note": "Descente en 3 s, dos neutre", "sets": 3, "repMin": 8, "repMax": 10, "rest": 75, "pct": [60, 68]}, {"name": "Tractions assistées", "sets": 3, "repMin": 6, "repMax": 10, "rest": 0, "ss": "B", "note": "Élastique ou machine : prends l'aide qui te permet de finir les reps, réduis-la quand ça devient facile"}, {"name": "Mollets unipodal", "note": "Reps par jambe · 2 s en haut", "sets": 3, "repMin": 12, "repMax": 15, "rest": 60, "ss": "B"}], "phase": "Phase 1 sur 3"}, {"id": "snow-p2", "name": "Musculation", "weeks": [6, 10], "note": "10 min de vélo progressif · Genou : douleur max 3/10, sinon réduis charge ou amplitude", "exercises": [{"name": "Réception de saut (box basse)", "note": "Box de 20–30 cm seulement · pas dans le vide, réception jambes fléchies, genoux dans l'axe, tenir 2 s · arrête si douleur", "sets": 3, "repMin": 4, "repMax": 4, "rest": 60}, {"name": "Squat", "note": "Lourd, descente contrôlée · amplitude sans douleur", "sets": 4, "repMin": 4, "repMax": 6, "rest": 150, "pct": [78, 84]}, {"name": "Fentes bulgares", "note": "Reps par jambe · plus lourd", "sets": 3, "repMin": 6, "repMax": 8, "rest": 0, "pct": [72, 78], "ss": "A"}, {"name": "Rotation landmine", "note": "Reps par côté · la rotation part des hanches", "sets": 3, "repMin": 8, "repMax": 10, "rest": 75, "ss": "A"}, {"name": "Soulevé de terre roumain", "sets": 3, "repMin": 6, "repMax": 8, "rest": 75, "pct": [70, 78]}, {"name": "Nordic hamstring curl", "note": "Descente la plus lente possible, élastique si besoin", "sets": 2, "repMin": 4, "repMax": 6, "rest": 0, "ss": "B"}, {"name": "Tractions assistées", "note": "Un peu moins d'aide qu'en phase 1", "sets": 3, "repMin": 5, "repMax": 8, "rest": 75, "ss": "B"}], "phase": "Phase 2 sur 3"}, {"id": "snow-p3", "name": "Musculation", "weeks": [11, 14], "note": "10 min de vélo progressif · Genou : douleur max 3/10, sinon réduis charge ou amplitude · semaine 14 : allège tout d'un tiers", "exercises": [{"name": "Skater jumps", "note": "Reps par côté · petits sauts latéraux contrôlés, réception tenue 2 s · remplace par des pas chassés si le genou proteste", "sets": 3, "repMin": 4, "repMax": 4, "rest": 45}, {"name": "Squat", "note": "Lourd et explosif à la montée", "sets": 3, "repMin": 3, "repMax": 5, "rest": 150, "pct": [85, 88]}, {"name": "Step-down excentrique", "note": "Reps par jambe · descente en 4 s, genou dans l'axe", "sets": 3, "repMin": 6, "repMax": 8, "rest": 0, "ss": "A"}, {"name": "Rotation landmine", "note": "Reps par côté · explosif", "sets": 3, "repMin": 8, "repMax": 8, "rest": 75, "ss": "A"}, {"name": "Soulevé de terre roumain", "sets": 2, "repMin": 5, "repMax": 6, "rest": 75, "pct": [75, 80]}, {"name": "Nordic hamstring curl", "sets": 2, "repMin": 5, "repMax": 6, "rest": 0, "ss": "B"}, {"name": "Tractions assistées", "sets": 2, "repMin": 5, "repMax": 8, "rest": 75, "ss": "B", "note": "Le moins d'aide possible"}], "phase": "Phase 3 sur 3"}, {"id": "caf", "name": "CAF — cours collectif", "kind": "class", "duration": 45, "exercises": []}], "endDate": "2027-02-19T12:00:00.000Z", "id": "prepa-snowboard"};
+const SEED_PROGRAM = {"name": "Prépa snowboard — jusqu'au 19 février", "startDate": "2026-11-16T00:00:00.000Z", "createdAt": "2026-11-17T19:30:00.000Z", "updatedAt": "2026-11-17T21:00:00.000Z", "days": [{"id": "snow-p1", "name": "Musculation", "weeks": [1, 5], "note": "10 min de vélo progressif · Genou : douleur max 3/10, sinon réduis charge ou amplitude", "exercises": [{"name": "Équilibre sur une jambe", "note": "Reps = secondes par jambe · genou légèrement fléchi et dans l'axe, les yeux fermés si c'est facile", "sets": 3, "repMin": 30, "repMax": 30, "rest": 30}, {"name": "Squat", "note": "Descente en 3 s · amplitude sans douleur au genou", "sets": 3, "repMin": 6, "repMax": 8, "rest": 120, "pct": [65, 72]}, {"name": "Fentes bulgares", "note": "Reps par jambe · réduis l'amplitude si le genou tire", "sets": 3, "repMin": 8, "repMax": 10, "rest": 0, "pct": [62, 70], "ss": "A"}, {"name": "Pallof press", "note": "Reps par côté · bassin immobile", "sets": 3, "repMin": 10, "repMax": 12, "rest": 75, "ss": "A"}, {"name": "Soulevé de terre roumain", "note": "Descente en 3 s, dos neutre", "sets": 3, "repMin": 8, "repMax": 10, "rest": 75, "pct": [60, 68]}, {"name": "Tractions assistées", "sets": 3, "repMin": 6, "repMax": 10, "rest": 0, "ss": "B", "note": "Élastique ou machine : prends l'aide qui te permet de finir les reps, réduis-la quand ça devient facile"}, {"name": "Mollets unipodal", "note": "Reps par jambe · 2 s en haut", "sets": 3, "repMin": 12, "repMax": 15, "rest": 60, "ss": "B"}], "phase": "Phase 1 sur 3"}, {"id": "snow-p2", "name": "Musculation", "weeks": [6, 10], "note": "10 min de vélo progressif · Genou : douleur max 3/10, sinon réduis charge ou amplitude", "exercises": [{"name": "Réception de saut (box basse)", "note": "Box de 20–30 cm seulement · pas dans le vide, réception jambes fléchies, genoux dans l'axe, tenir 2 s · arrête si douleur", "sets": 3, "repMin": 4, "repMax": 4, "rest": 60}, {"name": "Squat", "note": "Lourd, descente contrôlée · amplitude sans douleur", "sets": 4, "repMin": 4, "repMax": 6, "rest": 150, "pct": [78, 84]}, {"name": "Fentes bulgares", "note": "Reps par jambe · plus lourd", "sets": 3, "repMin": 6, "repMax": 8, "rest": 0, "pct": [72, 78], "ss": "A"}, {"name": "Rotation landmine", "note": "Reps par côté · la rotation part des hanches", "sets": 3, "repMin": 8, "repMax": 10, "rest": 75, "ss": "A"}, {"name": "Soulevé de terre roumain", "sets": 3, "repMin": 6, "repMax": 8, "rest": 75, "pct": [70, 78]}, {"name": "Nordic hamstring curl", "note": "Descente la plus lente possible, élastique si besoin", "sets": 2, "repMin": 4, "repMax": 6, "rest": 0, "ss": "B"}, {"name": "Tractions assistées", "note": "Un peu moins d'aide qu'en phase 1", "sets": 3, "repMin": 5, "repMax": 8, "rest": 75, "ss": "B"}], "phase": "Phase 2 sur 3"}, {"id": "snow-p3", "name": "Musculation", "weeks": [11, 14], "note": "10 min de vélo progressif · Genou : douleur max 3/10, sinon réduis charge ou amplitude · semaine 14 : allège tout d'un tiers", "exercises": [{"name": "Skater jumps", "note": "Reps par côté · petits sauts latéraux contrôlés, réception tenue 2 s · remplace par des pas chassés si le genou proteste", "sets": 3, "repMin": 4, "repMax": 4, "rest": 45}, {"name": "Squat", "note": "Lourd et explosif à la montée", "sets": 3, "repMin": 3, "repMax": 5, "rest": 150, "pct": [85, 88]}, {"name": "Step-down excentrique", "note": "Reps par jambe · descente en 4 s, genou dans l'axe", "sets": 3, "repMin": 6, "repMax": 8, "rest": 0, "ss": "A"}, {"name": "Rotation landmine", "note": "Reps par côté · explosif", "sets": 3, "repMin": 8, "repMax": 8, "rest": 75, "ss": "A"}, {"name": "Soulevé de terre roumain", "sets": 2, "repMin": 5, "repMax": 6, "rest": 75, "pct": [75, 80]}, {"name": "Nordic hamstring curl", "sets": 2, "repMin": 5, "repMax": 6, "rest": 0, "ss": "B"}, {"name": "Tractions assistées", "sets": 2, "repMin": 5, "repMax": 8, "rest": 75, "ss": "B", "note": "Le moins d'aide possible"}], "phase": "Phase 3 sur 3"}, {"id": "caf", "name": "CAF — cours collectif", "kind": "class", "duration": 45, "exercises": []}], "endDate": "2027-02-19T12:00:00.000Z", "id": "prepa-snowboard", "rev": 2026111800};
 const QUOTES = ["Chaque squat d'aujourd'hui, c'est une descente en plus sur les pistes.", "Tu n'as pas besoin d'être parfaite, juste d'être là.", "Les jambes se construisent ici, la glisse se savoure là-haut.", "Une séance de plus, c'est une chute de moins.", "Le plus dur, c'est de commencer. Tu y es déjà.", "Ton futur toi en snowboard te remercie déjà.", "Petit à petit, la force s'installe.", "Régulière plutôt que parfaite.", "Aujourd'hui, tu construis tes genoux de février.", "Respire, gaine, pousse. Tu gères.", "La poudreuse se mérite.", "Ce que tu fais ici, la montagne le sentira.", "Une série après l'autre, sans regarder la montagne entière.", "Fière de toi d'être venue.", "La motivation te fait commencer, l'habitude te fait continuer.", "Encore un peu : c'est maintenant que ça compte.", "Des cuisses solides, des virages faciles.", "Tu es plus forte que la semaine dernière.", "Le corps suit quand la tête décide.", "Chaque rep compte, même celles qui piquent.", "Garde le cap : 19 février, première trace.", "Force tranquille, technique propre.", "Ce n'est pas facile, c'est pour ça que ça marche.", "Tu fais ça pour toi, et c'est la meilleure raison.", "Les beaux jours de glisse commencent à la salle.", "Contrôle la descente, comme sur la neige.", "Un peu chaque semaine, beaucoup en février.", "Pas besoin d'aller vite, juste de ne pas s'arrêter.", "Tes jambes de snowboardeuse sont en chantier. Bon boulot.", "Termine fort, tu seras contente de l'avoir fait."];
 let quoteIdx = Math.floor(Math.random()*QUOTES.length);
 function newQuote(){ let i; do{ i=Math.floor(Math.random()*QUOTES.length); }while(i===quoteIdx && QUOTES.length>1); quoteIdx=i; return QUOTES[i]; }
@@ -594,7 +604,7 @@ const ICON = {
   up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>',
   down:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>'
 };
-const VIEWS = [["seance","Accueil"],["programmes","Programmes"],["calendrier","Calendrier"],["progression","Progression"],["historique","Historique"]];
+const VIEWS = [["seance","Accueil"],["programmes","Programmes"],["coach","Coach"],["calendrier","Calendrier"],["progression","Progression"],["historique","Historique"]];
 
 // ---------- état ----------
 const state = {
@@ -654,6 +664,8 @@ function mergeData(a,b){ // a = local, b = distant
   SYNC_COLS.forEach(c=>{ const m={}; [...(b[c]||[]),...(a[c]||[])].forEach(o=>{ if(!o||!o.id) return; const cur=m[o.id]; if(!cur||(o._ts||0)>=(cur._ts||0)) m[o.id]=o; });
     out[c]=Object.values(m).filter(o=>!(del[o.id] && del[o.id]>=(o._ts||0))); });
   if((a.maxesTs||0)>=(b.maxesTs||0)){ out.maxes=a.maxes||{}; out.maxesTs=a.maxesTs||0; } else { out.maxes=b.maxes||{}; out.maxesTs=b.maxesTs||0; }
+  let pr=[a.program,b.program,SEED_PROGRAM].filter(Boolean).sort((x,y)=>((y.rev||0)-(x.rev||0))||(y.updatedAt||'').localeCompare(x.updatedAt||''))[0];
+  out.program=pr;
   return out;
 }
 let syncTimer=null, syncing=false, syncAgain=false;
@@ -665,10 +677,12 @@ async function doSync(){
   try{
     const code=syncCode();
     const remote=(await rpc('get_state',{p_code:code}))||{};
-    const local={sessions:state.sessions,bodyweight:state.bodyweight,plans:state.plans,maxes:state.maxes,maxesTs:state.maxesTs||0,deleted:state.deleted};
+    const local={sessions:state.sessions,bodyweight:state.bodyweight,plans:state.plans,maxes:state.maxes,maxesTs:state.maxesTs||0,deleted:state.deleted,program:state.programs.find(x=>x.id===SEED_PROGRAM.id)};
     const m=mergeData(local,remote);
     await rpc('set_state',{p_code:code,p_data:{...m,v:1,savedAt:new Date().toISOString()}});
-    const changed=JSON.stringify([state.sessions,state.plans,state.bodyweight,state.maxes])!==JSON.stringify([m.sessions,m.plans,m.bodyweight,m.maxes]);
+    const curP=state.programs.find(x=>x.id===SEED_PROGRAM.id);
+    const changed=JSON.stringify([state.sessions,state.plans,state.bodyweight,state.maxes,curP&&curP.rev,curP&&curP.updatedAt])!==JSON.stringify([m.sessions,m.plans,m.bodyweight,m.maxes,m.program&&m.program.rev,m.program&&m.program.updatedAt]);
+    if(m.program){ const i=state.programs.findIndex(x=>x.id===m.program.id); if(i>=0) state.programs[i]=m.program; else state.programs.unshift(m.program); }
     state.sessions=m.sessions; state.bodyweight=m.bodyweight; state.plans=m.plans; state.maxes=m.maxes; state.maxesTs=m.maxesTs; state.deleted=m.deleted;
     LS('muscu-v1',{programs:state.programs,sessions:state.sessions,bodyweight:state.bodyweight,draft:state.draft,maxes:state.maxes,maxesTs:state.maxesTs,plans:state.plans,deleted:state.deleted});
     sync.status='ok'; sync.last=new Date(); sync.error=null; LS('snow-last-sync',sync.last.toISOString());
@@ -760,7 +774,7 @@ async function init(){
     state.programs=d.programs||[]; state.sessions=d.sessions||[]; state.bodyweight=d.bodyweight||[]; state.draft=d.draft||null; state.maxes=d.maxes||{}; state.maxesTs=d.maxesTs||0; state.plans=d.plans||[]; state.deleted=d.deleted||{};
     { const i=state.programs.findIndex(x=>x.id===SEED_PROGRAM.id);
       if(i<0){ state.programs.unshift(SEED_PROGRAM); localSave(); }
-      else if((state.programs[i].updatedAt||'')<SEED_PROGRAM.updatedAt){ state.programs[i]=SEED_PROGRAM; localSave(); } }
+      else if((state.programs[i].rev||0)<SEED_PROGRAM.rev){ state.programs[i]=SEED_PROGRAM; localSave(); } }
     try{ navigator.storage&&navigator.storage.persist&&navigator.storage.persist(); }catch(e){}
     state.ready=true; render(); doSync();
   }
@@ -806,11 +820,11 @@ window.addEventListener('hashchange',route);
 
 // ---------- rendu ----------
 function render(){
-  $('#tabs').innerHTML = VIEWS.filter(v=>v[0]!=='programmes'&&v[0]!=='historique').map(([k,l])=>`<a href="#${k}" class="${state.view===k?'on':''}">${ICON[k]}${l}${k==='seance'&&state.draft?' •':''}</a>`).join('');
+  $('#tabs').innerHTML = VIEWS.filter(v=>!['programmes','historique','coach'].includes(v[0])).map(([k,l])=>`<a href="#${k}" class="${state.view===k?'on':''}">${ICON[k]}${l}${k==='seance'&&state.draft?' •':''}</a>`).join('');
   if(!state.ready){ $('#app').innerHTML='<div class="loading">Chargement…</div>'; return; }
   let html='';
   if(state.mode!=='local' && state.offline) html+=`<div class="notice">Données injoignables pour l'instant — ce qui s'affiche peut ne pas être à jour.</div>`;
-  html += ({seance:renderSeance,programmes:renderProgrammes,historique:renderHistorique,calendrier:renderCalendrier,progression:renderProgression})[state.view]();
+  html += ({seance:renderSeance,programmes:renderProgrammes,historique:renderHistorique,calendrier:renderCalendrier,progression:renderProgression,coach:renderCoach})[state.view]();
   $('#app').innerHTML = html;
   if(state.modal) $('#app').insertAdjacentHTML('beforeend',renderModal());
   tickClock(); renderRest();
@@ -866,7 +880,7 @@ function renderSeance(){
   const jour=iso=>new Date(iso).toLocaleDateString('fr-FR',{weekday:'long'});
   const planLine=t=>{ const pl=planFor(t,ws); if(!pl) return `<div class="plan-l"><a href="#" data-act="gocal">Pas encore calée cette semaine · Planifier</a></div>`;
     const k=pl.date, td=ymd(new Date()); return `<div class="plan-l">${k===td?'Prévue aujourd\'hui':k<td?'Prévue '+fromYmd(k).toLocaleDateString('fr-FR',{weekday:'long'})+' (pas faite)':'Prévue '+fromYmd(k).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'short'})} · <a href="#" data-act="gocal">modifier</a></div>`; };
-  let h=`<div class="hello"><div class="sub">${new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}</div><h1 class="hi">Bonjour ${USER_NAME}</h1></div><div class="quote">${esc(quote())}</div>`;
+  let h=`<div class="hello"><div class="sub">${new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}</div><h1 class="hi" data-act="hitap">Bonjour ${USER_NAME}</h1></div><div class="quote">${esc(quote())}</div>`;
   if(wk!=null && tot){
     const pct=Math.min(100,Math.max(0,100*Math.min(wk,tot)/tot));
     h+=`<div class="card" style="padding:12px 14px"><div class="row between"><b>${wk>tot?'Prépa terminée':'Semaine '+Math.max(1,wk)+' / '+tot}</b><span class="sub">${wk>tot?'Bonne glisse !':'Objectif SNOW le '+dShort(p.endDate||new Date(weekStart(p.startDate).getTime()+(tot*7-1)*864e5))}</span></div>
@@ -1205,6 +1219,53 @@ function renderCalendrier(){
   return h;
 }
 
+
+// ---------- mode coach ----------
+const isCoach=()=>LS('coach-unlock')===COACH_HASH;
+let hiTaps=[];
+function renderCoach(){
+  if(!isCoach()) return `<div class="top"><h1>Mode coach</h1></div><div class="card"><label class="l">Code coach</label><div class="row"><input class="f grow" id="coachpin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"><button class="btn pri" data-act="coachlogin">Entrer</button></div></div>`;
+  const p=state.programs.find(x=>x.id===SEED_PROGRAM.id); if(!p) return '<div class="card">Aucun programme.</div>';
+  if(!state.coach) state.coach=clone(p);
+  const c=state.coach, wk=progWeek(c);
+  const inp=(path,val,opt='')=>`<input class="f" data-c="${path}" value="${esc(val??'')}" ${opt}>`;
+  let h=`<div class="top"><div><h1>Mode coach</h1><div class="sub">Semaine actuelle : ${wk}/${progTotal(c)} · modifs envoyées à Sophie en 20 s</div></div></div>
+    <div class="card"><label class="l">Nom du programme</label>${inp('name',c.name)}
+      <div class="row" style="margin-top:10px"><div class="grow"><label class="l">Début (lundi)</label><input class="f" type="date" data-c="startDate" value="${ymd(c.startDate)}"></div><div class="grow"><label class="l">Fin</label><input class="f" type="date" data-c="endDate" value="${ymd(c.endDate)}"></div></div></div>`;
+  c.days.forEach((d,di)=>{
+    if(d.kind==='class'){ h+=`<div class="card"><h3>${esc(d.name)}</h3><div class="sub">Cours collectif : rien à régler ici.</div><label class="l" style="margin-top:8px">Durée enregistrée (min)</label>${inp(`days.${di}.duration`,d.duration,'inputmode="numeric"')}</div>`; return; }
+    const cur=d.weeks&&wk>=d.weeks[0]&&wk<=d.weeks[1];
+    const open=state.coOpen?state.coOpen[di]:cur; 
+    if(!open){ h+=`<div class="card co-day ${cur?'cur':''}"><div class="row between" data-act="cotoggle" data-di="${di}" style="cursor:pointer"><div><h3>${esc(d.phase||d.name)}</h3><div class="sub">Semaines ${d.weeks?d.weeks[0]+' à '+d.weeks[1]:''} · ${d.exercises.length} exercices</div></div><span class="sub">Modifier ▾</span></div></div>`; return; }
+    h+=`<div class="card co-day ${cur?'cur':''}"><div class="row between" data-act="cotoggle" data-di="${di}" style="cursor:pointer"><h3>${esc(d.phase||d.name)}</h3>${cur?'<span class="chip acc">En cours</span>':'<span class="sub">Replier ▴</span>'}</div>
+      <div class="co-g3"><div><label class="l">Nom affiché</label>${inp(`days.${di}.name`,d.name)}</div><div><label class="l">Sem. début</label>${inp(`days.${di}.weeks.0`,d.weeks?.[0],'inputmode="numeric"')}</div><div><label class="l">Sem. fin</label>${inp(`days.${di}.weeks.1`,d.weeks?.[1],'inputmode="numeric"')}</div></div>
+      <label class="l" style="margin-top:8px">Consigne d'échauffement</label>${inp(`days.${di}.note`,d.note)}
+      ${d.exercises.map((e,xi)=>`<div class="co-ex">
+        <div class="row" style="gap:6px"><select class="f co-ss" data-c="days.${di}.exercises.${xi}.ss">${['','A','B','C'].map(x=>`<option value="${x}" ${(e.ss||'')===x?'selected':''}>${x?'Sup. '+x:'Seul'}</option>`).join('')}</select>
+          <input class="f grow" list="exlib" data-c="days.${di}.exercises.${xi}.name" value="${esc(e.name)}"></div>
+        <div class="co-g4"><div><label class="l">Séries</label>${inp(`days.${di}.exercises.${xi}.sets`,e.sets,'inputmode="numeric"')}</div><div><label class="l">Reps min</label>${inp(`days.${di}.exercises.${xi}.repMin`,e.repMin,'inputmode="numeric"')}</div><div><label class="l">Reps max</label>${inp(`days.${di}.exercises.${xi}.repMax`,e.repMax,'inputmode="numeric"')}</div><div><label class="l">Repos (s)</label>${inp(`days.${di}.exercises.${xi}.rest`,e.rest,'inputmode="numeric"')}</div></div>
+        <div class="co-g4"><div><label class="l">% max mini</label>${inp(`days.${di}.exercises.${xi}.pct.0`,e.pct?.[0],'inputmode="numeric" placeholder="–"')}</div><div><label class="l">% max maxi</label>${inp(`days.${di}.exercises.${xi}.pct.1`,e.pct?.[1],'inputmode="numeric" placeholder="–"')}</div><div style="grid-column:span 2"><label class="l">Consigne</label>${inp(`days.${di}.exercises.${xi}.note`,e.note)}</div></div>
+        <div class="row" style="justify-content:flex-end;gap:4px;margin-top:6px"><button class="icon-btn" data-act="coup" data-di="${di}" data-xi="${xi}">${ICON.up}</button><button class="icon-btn" data-act="codown" data-di="${di}" data-xi="${xi}">${ICON.down}</button><button class="icon-btn" data-act="codel" data-di="${di}" data-xi="${xi}">${ICON.x}</button></div>
+      </div>`).join('')}
+      <button class="btn sm" data-act="coadd" data-di="${di}" style="margin-top:8px">+ Exercice</button></div>`;
+  });
+  h+=`<div class="co-save"><button class="btn block" data-act="cocancel">Annuler les modifs</button><button class="btn pri block" data-act="cosave">Enregistrer et envoyer</button></div>
+    <div style="text-align:center;margin:16px 0"><a href="#" data-act="coachout" style="color:var(--tx2);font-size:13px">Quitter le mode coach sur cet appareil</a></div>`;
+  return h;
+}
+function coSet(path,val){ const k=path.split('.'); let o=state.coach; for(let i=0;i<k.length-1;i++){ if(o[k[i]]==null) o[k[i]]=/^\d+$/.test(k[i+1])?[]:{}; o=o[k[i]]; } o[k[k.length-1]]=val; }
+function coClean(p){
+  const n=v=>{ const x=num(v); return x==null?null:x; };
+  p.startDate=new Date((p.startDate&&p.startDate.length===10?p.startDate+'T00:00:00':p.startDate)).toISOString();
+  p.endDate=new Date((p.endDate&&p.endDate.length===10?p.endDate+'T12:00:00':p.endDate)).toISOString();
+  p.days.forEach(d=>{ if(d.kind==='class'){ d.duration=n(d.duration)||45; return; }
+    if(d.weeks) d.weeks=[n(d.weeks[0])||1,n(d.weeks[1])||n(d.weeks[0])||1];
+    d.exercises=d.exercises.filter(e=>(e.name||'').trim()).map(e=>{ const o={...e,name:e.name.trim(),sets:n(e.sets)||3,repMin:n(e.repMin),repMax:n(e.repMax)??n(e.repMin),rest:n(e.rest)??90};
+      const a=n(e.pct?.[0]),b=n(e.pct?.[1]); if(a&&b) o.pct=[a,b]; else if(a) o.pct=[a,a]; else delete o.pct;
+      if(!o.ss) delete o.ss; if(!o.note) delete o.note; return o; }); });
+  p.rev=(p.rev||SEED_PROGRAM.rev)+1; p.updatedAt=new Date().toISOString(); return p;
+}
+
 // ----- Progression -----
 function exerciseIndex(){
   const map={};
@@ -1292,6 +1353,7 @@ function renderProgression(){
       ${state.codeEdit?`<div style="margin-top:12px"><label class="l">Code à récupérer</label><div class="sub" style="margin-bottom:6px">Les données de cet appareil seront remplacées par celles du code.</div><div class="row"><input class="f grow" id="newcode" placeholder="snow-xxxx-xxxx-xxxx" style="font-family:ui-monospace,Menlo,monospace"><button class="btn sm pri" data-act="setcode">Valider</button></div></div>`:''}
       <div class="row wrap" style="margin-top:12px"><button class="btn sm" data-act="editcode">Récupérer mes données</button><button class="btn sm" data-act="syncnow">Synchroniser maintenant</button></div></div>`;
   }
+  if(isCoach()) h+=`<div style="text-align:center;margin:18px 0"><a href="#coach" style="color:var(--red);font-weight:700">Ouvrir le mode coach</a></div>`;
   return h;
 }
 
@@ -1373,6 +1435,7 @@ setInterval(()=>{ tickClock(); if(state.rest) renderRest(); },250);
 // ---------- événements ----------
 document.addEventListener('input',e=>{
   const t=e.target;
+  if(t.dataset.c && state.coach){ coSet(t.dataset.c,t.value); }
   if(t.dataset.f && state.draft){
     if(t.dataset.f==='notes'){ state.draft.notes=t.value; }
     else { const s=state.draft.exercises[+t.dataset.ei].sets[+t.dataset.si]; s[t.dataset.f]=t.value; }
@@ -1387,6 +1450,7 @@ document.addEventListener('input',e=>{
 });
 document.addEventListener('change',e=>{
   const t=e.target, a=t.dataset.act;
+  if(t.dataset.c && state.coach && t.tagName==='SELECT'){ coSet(t.dataset.c,t.value); }
   if(a==='pickprog'){ LS('muscu-prog',t.value); render(); }
   if(a==='pickex'){ state.progEx=t.value; render(); }
 });
@@ -1472,6 +1536,15 @@ document.addEventListener('click',e=>{
     case 'setcode': { const v=($('#newcode').value||'').trim().toLowerCase(); if(!/^snow-[a-z0-9]{4}(-[a-z0-9]{4}){2}$/.test(v)){ toast('Code invalide.'); break; } useCode(v); state.codeEdit=false; render(); break; }
     case 'copylink': copyTxt(location.origin+location.pathname+'#code='+syncCode(),'Lien copié : envoie-le par message'); break;
     case 'syncnow': doSync().then(()=>toast(sync.status==='ok'?'Synchronisé ✓':'Pas de réseau : réessaie plus tard')); break;
+    case 'hitap': { const now=Date.now(); hiTaps=hiTaps.filter(x=>now-x<2500); hiTaps.push(now); if(hiTaps.length>=5){ hiTaps=[]; state.coach=null; location.hash='#coach'; } break; }
+    case 'coachlogin': { const v=($('#coachpin').value||'').trim(); if(pinHash(v)===COACH_HASH){ LS('coach-unlock',COACH_HASH); state.coach=null; render(); } else toast('Code coach incorrect.'); break; }
+    case 'coachout': e.preventDefault(); LS('coach-unlock',''); state.coach=null; location.hash='#seance'; break;
+    case 'coup': case 'codown': { const ex=state.coach.days[+D.di].exercises, i=+D.xi, j=a==='coup'?i-1:i+1; if(j>=0&&j<ex.length){ [ex[i],ex[j]]=[ex[j],ex[i]]; render(); } break; }
+    case 'codel': state.coach.days[+D.di].exercises.splice(+D.xi,1); render(); break;
+    case 'coadd': state.coach.days[+D.di].exercises.push({name:'',sets:3,repMin:8,repMax:12,rest:60}); render(); break;
+    case 'cotoggle': { const c=state.coach, wk=progWeek(c); if(!state.coOpen){ state.coOpen={}; c.days.forEach((d,i)=>state.coOpen[i]=!!(d.weeks&&wk>=d.weeks[0]&&wk<=d.weeks[1])); } state.coOpen[+D.di]=!state.coOpen[+D.di]; render(); break; }
+    case 'cocancel': state.coach=null; render(); toast('Modifications annulées'); break;
+    case 'cosave': { const pr=coClean(clone(state.coach)); const i=state.programs.findIndex(x=>x.id===pr.id); state.programs[i]=pr; state.coach=null; localSave(); toast('Programme envoyé ✓'); render(); window.scrollTo(0,0); break; }
     case 'warmup': startRest(600,'Échauffement · vélo'); break;
     case 'restmin': state.restMini=!state.restMini; renderRest(); break;
     case 'restskip': state.rest=null; renderRest(); break;
