@@ -583,7 +583,7 @@ const TEMPLATES = {
   }
 };
 
-const APP_VERSION = '20261117223436';
+const APP_VERSION = '20261118104040';
 const USER_NAME = 'Sophie';
 const COACH_HASH = 'eabf452c';
 const PIN_HASH = 'eabb7f46';
@@ -884,7 +884,7 @@ function renderSeance(){
   const jour=iso=>new Date(iso).toLocaleDateString('fr-FR',{weekday:'long'});
   const planLine=t=>{ const pl=planFor(t,ws); if(!pl) return `<div class="plan-l"><a href="#" data-act="gocal">Pas encore calée cette semaine · Planifier</a></div>`;
     const k=pl.date, td=ymd(new Date()); return `<div class="plan-l">${k===td?'Prévue aujourd\'hui':k<td?'Prévue '+fromYmd(k).toLocaleDateString('fr-FR',{weekday:'long'})+' (pas faite)':'Prévue '+fromYmd(k).toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'short'})} · <a href="#" data-act="gocal">modifier</a></div>`; };
-  let h=`<div class="hello"><div class="sub">${new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}</div><h1 class="hi" data-act="hitap">Bonjour ${USER_NAME}</h1></div><div class="quote">${esc(quote())}</div>`;
+  let h=`<div class="hello"><div class="sub">${new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'})}</div><h1 class="hi" data-act="hitap">Muscu Soupie</h1></div><div class="quote">${esc(quote())}</div>`;
   if(wk!=null && tot){
     const pct=Math.min(100,Math.max(0,100*Math.min(wk,tot)/tot));
     h+=`<div class="card" style="padding:12px 14px"><div class="row between"><b>${wk>tot?'Prépa terminée':'Semaine '+Math.max(1,wk)+' / '+tot}</b><span class="sub">${wk>tot?'Bonne glisse !':'Objectif SNOW le '+dShort(p.endDate||new Date(weekStart(p.startDate).getTime()+(tot*7-1)*864e5))}</span></div>
